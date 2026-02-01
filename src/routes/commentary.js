@@ -23,17 +23,15 @@ commentaryRouter.get("/", async (req, res) => {
 
   const queryResult = listCommentaryQuerySchema.safeParse(req.query);
   if (!queryResult.success) {
-    return res
-      .status(400)
-      .json({
-        error: "Invalid query parameters.",
-        details: queryResult.error.issues,
-      });
+    return res.status(400).json({
+      error: "Invalid query parameters.",
+      details: queryResult.error.issues,
+    });
   }
 
   try {
     const { id: matchId } = paramsResult.data;
-    const { limit = 10 } = queryResult.data;
+    const { limit = 100 } = queryResult.data;
 
     const safeLimit = Math.min(limit, MAX_LIMIT);
 
@@ -63,22 +61,18 @@ commentaryRouter.post("/", async (req, res) => {
   const bodyResult = createCommentarySchema.safeParse(req.body);
 
   if (!bodyResult.success) {
-    return res
-      .status(400)
-      .json({
-        error: "Invalid commentary payload.",
-        details: bodyResult.error.issues,
-      });
+    return res.status(400).json({
+      error: "Invalid commentary payload.",
+      details: bodyResult.error.issues,
+    });
   }
 
   try {
-    const { minute, ...rest } = bodyResult.data;
     const [result] = await db
       .insert(commentary)
       .values({
         matchId: paramsResult.data.id,
-        minute,
-        ...rest,
+        ...bodyResult.data,
       })
       .returning();
 
